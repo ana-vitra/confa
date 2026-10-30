@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Asesor y Contador Financiero Personal</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white pb-20">
+
+  <!-- Navbar Superior -->
+  <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <i data-lucide="calculator" class="w-6 h-6 text-slate-950 stroke-[2.5]"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            Contador & Asesor Personal
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Ruta a la Libertad Financiera</span>
+          </h1>
+          <p class="text-xs text-slate-400">Deudas → Fondo de Emergencia → Casa Propia → Auto</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="resetData()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 border border-slate-700 transition flex items-center gap-1.5">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reiniciar
+        </button>
+        <button onclick="window.print()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-1.5">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i> Exportar
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegación por Fases / Pestañas -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
+      <nav class="flex space-x-2 py-2 text-xs font-semibold whitespace-nowrap" id="tabNav">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-2">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> 1. Diagnóstico General
+        </button>
+        <button onclick="switchTab('deudas')" id="tab-deudas" class="tab-btn px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex items-center gap-2">
+          <i data-lucide="flame" class="w-4 h-4 text-red-400"></i> 2. Plan Bola de Nieve (Deudas)
+        </button>
+        <button onclick="switchTab('emergencia')" id="tab-emergencia" class="tab-btn px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i> 3. Fondo de Emergencia (3-6m)
+        </button>
+        <button onclick="switchTab('casa')" id="tab-casa" class="tab-btn px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex items-center gap-2">
+          <i data-lucide="home" class="w-4 h-4 text-blue-400"></i> 4. Crédito Hipotecario (Casa)
+        </button>
+        <button onclick="switchTab('carro')" id="tab-carro" class="tab-btn px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex items-center gap-2">
+          <i data-lucide="car" class="w-4 h-4 text-purple-400"></i> 5. Crédito Automotriz (Auto)
+        </button>
+        <button onclick="switchTab('inversiones')" id="tab-inversiones" class="tab-btn px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 flex items-center gap-2">
+          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> 6. Inversiones (GBM, Nu, eToro, Cetes)
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: DIAGNÓSTICO & FLUJO DE EFECTIVO -->
+    <!-- ========================================== -->
+    <div id="content-dashboard" class="tab-content space-y-6">
+      
+      <!-- Banner de Semáforo Financiero -->
+      <div id="financialHealthCard" class="bg-slate-950 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <!-- Renderizado dinámicamente -->
+      </div>
+
+      <!-- Resumen en Tarjetas Rápidas -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-lg">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5"><i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-400"></i> Ingresos Mensuales</span>
+          <p id="sumIngresos" class="text-2xl font-bold text-emerald-400 mt-1">$0 MXN</p>
+          <span class="text-[11px] text-slate-500">Neto disponible mensual</span>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-lg">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5"><i data-lucide="shopping-cart" class="w-4 h-4 text-blue-400"></i> Gastos Fijos Básicos</span>
+          <p id="sumGastos" class="text-2xl font-bold text-blue-400 mt-1">$0 MXN</p>
+          <span class="text-[11px] text-slate-500">Renta, comida, servicios, etc.</span>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-lg">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5"><i data-lucide="credit-card" class="w-4 h-4 text-red-400"></i> Pagos Mínimos a Deudas</span>
+          <p id="sumPagosDeudas" class="text-2xl font-bold text-red-400 mt-1">$0 MXN</p>
+          <span class="text-[11px] text-slate-500">Compromiso mensual obligatorio</span>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shadow-lg">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Flujo Libre (Acelerador)</span>
+          <p id="sumFlujoLibre" class="text-2xl font-bold text-amber-400 mt-1">$0 MXN</p>
+          <span class="text-[11px] text-slate-500">Dinero para liquidar deudas o ahorrar</span>
+        </div>
+      </div>
+
+      <!-- Formularios de Entradas: Ingresos vs Gastos Fijos -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Panel Ingresos -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-bold text-white flex items-center gap-2">
+              <i data-lucide="wallet" class="w-5 h-5 text-emerald-400"></i> Fuentes de Ingreso Mensuales
+            </h3>
+            <button onclick="addIngresoRow()" class="px-2.5 py-1 text-xs rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 font-semibold flex items-center gap-1">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar Ingreso
+            </button>
+          </div>
+
+          <div id="ingresosList" class="space-y-2.5">
+            <!-- Filas dinámicas -->
+          </div>
+        </div>
+
+        <!-- Panel Gastos Fijos -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-bold text-white flex items-center gap-2">
+              <i data-lucide="home" class="w-5 h-5 text-blue-400"></i> Gastos Fijos No Negociables
+            </h3>
+            <button onclick="addGastoRow()" class="px-2.5 py-1 text-xs rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 font-semibold flex items-center gap-1">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar Gasto
+            </button>
+          </div>
+
+          <div id="gastosList" class="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
+            <!-- Filas dinámicas -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gráfico de Distribución del Ingreso (Regla 50-30-20) -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+          <i data-lucide="pie-chart" class="w-5 h-5 text-teal-400"></i> Análisis de Distribución de tu Dinero
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <div class="md:col-span-4 flex justify-center">
+            <div class="w-48 h-48 relative">
+              <canvas id="cashflowChart"></canvas>
+            </div>
+          </div>
+          <div class="md:col-span-8 space-y-3" id="cashflowAnalysis">
+            <!-- Diagnóstico automatizado -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: LIQUIDADOR DE DEUDAS (BOLA DE NIEVE) -->
+    <!-- ========================================== -->
+    <div id="content-deudas" class="tab-content hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-red-500/10 via-amber-500/10 to-transparent border border-red-500/30 rounded-2xl p-5 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="zap" class="w-6 h-6 text-red-400"></i> Plan Estratégico de Liquidación de Deudas
+            </h2>
+            <p class="text-xs text-slate-300 mt-1">
+              Agrega todas tus tarjetas, créditos personales o departamentales. El sistema calculará la fecha exacta en la que serás 100% libre.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-semibold text-slate-300">Estrategia:</label>
+            <select id="debtStrategy" onchange="calcDebts()" class="bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white font-medium focus:ring-2 focus:ring-emerald-500">
+              <option value="snowball">Bola de Nieve (Menor saldo primero - Victoria Rápida)</option>
+              <option value="avalanche">Avalancha (Mayor tasa de interés primero - Menos Intereses)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de deudas editable -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-800 gap-2">
+          <div class="flex items-center gap-3">
+            <h3 class="font-bold text-white flex items-center gap-2">
+              <i data-lucide="layers" class="w-5 h-5 text-red-400"></i> Deudas Actuales
+            </h3>
+            <span id="totalDeudaBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">Total: $0</span>
+          </div>
+          <button onclick="addDeudaRow()" class="px-3 py-1.5 text-xs rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/30 font-semibold flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar Tarjeta / Crédito
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="text-slate-400 border-b border-slate-800 font-semibold">
+              <tr>
+                <th class="pb-2.5 pr-2">Nombre / Banco</th>
+                <th class="pb-2.5 pr-2">Saldo Pendiente (MXN)</th>
+                <th class="pb-2.5 pr-2">Tasa Interés Anual / CAT (%)</th>
+                <th class="pb-2.5 pr-2">Pago Mínimo Requerido</th>
+                <th class="pb-2.5 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="deudasTableBody" class="divide-y divide-slate-800/60">
+              <!-- Filas dinámicas -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Simulación y Calendario del Plan de Liquidación -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <i data-lucide="rocket" class="w-4 h-4 text-emerald-400"></i> Acelerador de Pagos
+          </h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Tienes un flujo libre mensual estimado de <strong id="flujoAceleradorTxt" class="text-emerald-400">$0 MXN</strong>. ¿Cuánto deseas destinar como inyección extra para liquidar más rápido?
+          </p>
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Aporte extra mensual:</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="pagoExtraInput" oninput="calcDebts()" value="1000" min="0" step="100" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-bold text-emerald-400">
+            </div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Tiempo para pagar:</span>
+              <span id="mesesPagarTxt" class="font-bold text-white">0 meses</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Fecha de libertad:</span>
+              <span id="fechaLibertadTxt" class="font-bold text-emerald-400">Inmediata</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Intereses ahorrados aprox:</span>
+              <span id="interesesAhorradosTxt" class="font-bold text-emerald-400">$0 MXN</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-8 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <h4 class="font-bold text-white text-sm mb-3 flex items-center gap-2">
+            <i data-lucide="trending-down" class="w-4 h-4 text-emerald-400"></i> Proyección de Caída de tus Deudas Mes a Mes
+          </h4>
+          <div class="h-64">
+            <canvas id="debtChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: FONDO DE EMERGENCIA (3 A 6 MESES) -->
+    <!-- ========================================== -->
+    <div id="content-emergencia" class="tab-content hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent border border-amber-500/30 rounded-2xl p-5 shadow-xl">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="shield" class="w-6 h-6 text-amber-400"></i> Tu Blindaje: Fondo de Emergencia
+        </h2>
+        <p class="text-xs text-slate-300 mt-1 max-w-3xl">
+          Una vez liquidadas tus deudas caras, el 100% de ese dinero liberado se redirige aquí. El fondo de emergencia te protege de imprevistos médicos, desempleo o averías sin volver a endeudarte con tarjetas.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Configuración de la Meta del Fondo -->
+        <div class="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+          <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <i data-lucide="target" class="w-5 h-5 text-amber-400"></i> Calculadora del Fondo
+          </h3>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1.5">¿Cuántos meses deseas cubrir?</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="setMesesEmergencia(3)" id="btn-em-3" class="em-btn active p-2.5 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-300 text-xs font-bold text-center">
+                3 Meses<br><span class="text-[10px] font-normal text-slate-400">Empleo fijo</span>
+              </button>
+              <button onclick="setMesesEmergencia(4)" id="btn-em-4" class="em-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-xs font-bold text-center">
+                4 Meses<br><span class="text-[10px] font-normal text-slate-400">Balanceado</span>
+              </button>
+              <button onclick="setMesesEmergencia(6)" id="btn-em-6" class="em-btn p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-xs font-bold text-center">
+                6 Meses<br><span class="text-[10px] font-normal text-slate-400">Freelance/Familia</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Ahorro actual que ya tienes guardado:</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="ahorroActualInput" oninput="calcEmergencia()" value="5000" min="0" step="500" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-bold text-emerald-400">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Aporte mensual destinado al fondo:</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="aporteMensualFondoInput" oninput="calcEmergencia()" value="3000" min="0" step="200" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-bold text-emerald-400">
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Tus Gastos Básicos Mensuales:</span>
+              <span id="emGastosMensuales" class="font-bold text-slate-200">$0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Meta Objetivo Total:</span>
+              <span id="emMetaTotal" class="font-bold text-amber-400 text-sm">$0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Faltante por ahorrar:</span>
+              <span id="emFaltante" class="font-bold text-red-400">$0</span>
+            </div>
+            <div class="flex justify-between pt-2 border-t border-slate-800">
+              <span class="text-slate-400">Tiempo estimado para completarlo:</span>
+              <span id="emMesesEstimados" class="font-bold text-emerald-400 text-sm">0 meses</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de Progreso y Dónde Guardar el Fondo -->
+        <div class="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold text-white text-sm">Progreso hacia tu Blindaje Total</h4>
+              <span id="emPorcentajeTxt" class="text-xs font-bold text-emerald-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden p-0.5 border border-slate-700">
+              <div id="emProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Dónde meter el fondo -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i> ¿Dónde tener guardado este fondo de emergencia?
+            </h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              El fondo <strong>NUNCA</strong> debe estar en la cuenta de nómina (se gasta por error) ni en una alcancía (pierde valor por inflación). Debe estar en cuentas con <strong>rendimiento diario y disponibilidad 24/7</strong>:
+            </p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <span class="font-bold text-emerald-400 block mb-1">Nu Cajitas / Klar</span>
+                <span class="text-slate-400">Rinde entre 13% y 14.5% anual, seguro Prosofipo y retiro inmediato por SPEI en cualquier emergencia.</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <span class="font-bold text-teal-400 block mb-1">CetesDirecto (BONDDIA)</span>
+                <span class="text-slate-400">Liquidez en días hábiles bancarios, máxima seguridad gubernamental de México y tasa cercana a 10.5%.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs text-slate-300 flex items-start gap-3">
+            <i data-lucide="award" class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="text-emerald-300">Regla de Oro:</strong> Una vez completado este fondo, ¡estás listo para el siguiente gran paso sin peligro de quiebra: comprar tu casa o tu carro con finanzas sólidas!
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: CRÉDITO HIPOTECARIO (COMPRAR CASA) -->
+    <!-- ========================================== -->
+    <div id="content-casa" class="tab-content hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent border border-blue-500/30 rounded-2xl p-5 shadow-xl">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="home" class="w-6 h-6 text-blue-400"></i> Asesor de Préstamo Hipotecario (Comprar Casa)
+        </h2>
+        <p class="text-xs text-slate-300 mt-1 max-w-3xl">
+          Calcula cuánto necesitas de enganche, los gastos notariales ocultos y la mensualidad máxima que los bancos te autorizarán según tus ingresos comprobables.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Parámetros de la Casa -->
+        <div class="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5 text-blue-400"></i> Simulador de Compra
+          </h3>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Valor de la Propiedad deseada (MXN):</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="precioCasaInput" oninput="calcHipoteca()" value="1800000" min="200000" step="50000" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-bold text-blue-400">
+            </div>
+            <!-- Botones de precio rápido -->
+            <div class="flex gap-2 mt-1.5">
+              <button onclick="setPrecioCasa(1200000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$1.2M</button>
+              <button onclick="setPrecioCasa(1800000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$1.8M</button>
+              <button onclick="setPrecioCasa(2500000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$2.5M</button>
+              <button onclick="setPrecioCasa(3500000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$3.5M</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-300 block mb-1">% Enganche mínimo:</label>
+              <select id="engancheCasaPct" onchange="calcHipoteca()" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white font-medium">
+                <option value="10">10% (Mínimo bancario)</option>
+                <option value="15">15%</option>
+                <option value="20" selected>20% (Recomendado)</option>
+                <option value="30">30% (Excelente)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-300 block mb-1">Plazo del crédito:</label>
+              <select id="plazoCasaAnios" onchange="calcHipoteca()" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white font-medium">
+                <option value="15">15 Años</option>
+                <option value="20" selected>20 Años</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Tasa de interés bancaria anual estimada:</label>
+            <div class="relative">
+              <input type="number" id="tasaHipotecaInput" oninput="calcHipoteca()" value="10.25" min="7" max="16" step="0.25" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-200">
+              <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 text-xs font-bold">% anual</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Resultados del Análisis Hipotecario -->
+        <div class="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-bold text-white text-base">Desglose de Liquidez y Mensualidad</h3>
+            <span id="hipotecaAprobacionBadge" class="text-xs px-2.5 py-0.5 rounded-full font-bold">Evaluando...</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+              <span class="text-slate-400 font-medium block">Efectivo necesario para iniciar:</span>
+              <div class="flex justify-between">
+                <span>Enganche:</span>
+                <span id="resEngancheCasa" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Notario y escrituras (~6%):</span>
+                <span id="resGastosNotariales" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-800 text-sm">
+                <span class="font-bold text-blue-400">Total en Efectivo:</span>
+                <span id="resTotalEfectivoCasa" class="font-bold text-blue-400">$0</span>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+              <span class="text-slate-400 font-medium block">Compromiso Mensual:</span>
+              <div class="flex justify-between">
+                <span>Monto a financiar:</span>
+                <span id="resMontoFinanciarCasa" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between text-sm pt-2 border-t border-slate-800">
+                <span class="font-bold text-emerald-400">Mensualidad estimada:</span>
+                <span id="resMensualidadCasa" class="font-bold text-emerald-400">$0/mes</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>Ingreso mínimo comprobable:</span>
+                <span id="resIngresoMinimoCasa" class="font-semibold text-slate-300">$0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnóstico de Viabilidad según sus ingresos actuales -->
+          <div id="hipotecaFeedbackBox" class="p-4 rounded-xl text-xs leading-relaxed">
+            <!-- Texto dinámico -->
+          </div>
+
+          <div class="text-[11px] text-slate-500 bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+            <strong>Requisito Bancario Clave:</strong> La mensualidad de la hipoteca no debe superar el 30% a 35% de tus ingresos netos mensuales, y tus deudas activas en buró deben estar al mínimo para obtener la tasa más baja.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: CRÉDITO AUTOMOTRIZ (COMPRAR CARRO) -->
+    <!-- ========================================== -->
+    <div id="content-carro" class="tab-content hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-transparent border border-purple-500/30 rounded-2xl p-5 shadow-xl">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="car" class="w-6 h-6 text-purple-400"></i> Asesor de Préstamo de Auto (Regla 20/4/10)
+        </h2>
+        <p class="text-xs text-slate-300 mt-1 max-w-3xl">
+          Aplica la regla financiera de oro para autos: <strong>20% de enganche mínimo</strong>, plazo de <strong>no más de 4 años (48 meses)</strong> y mensualidad de <strong>máximo el 10% de tus ingresos</strong>.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Parámetros del Carro -->
+        <div class="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <i data-lucide="sliders" class="w-5 h-5 text-purple-400"></i> Parámetros del Vehículo
+          </h3>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Precio del Carro (Nuevo o Seminuevo):</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="precioCarroInput" oninput="calcAuto()" value="380000" min="50000" step="10000" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-bold text-purple-400">
+            </div>
+            <!-- Botones de precio rápido -->
+            <div class="flex gap-2 mt-1.5">
+              <button onclick="setPrecioAuto(250000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$250k</button>
+              <button onclick="setPrecioAuto(380000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$380k</button>
+              <button onclick="setPrecioAuto(500000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$500k</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium text-slate-300 block mb-1">% Enganche:</label>
+              <select id="engancheCarroPct" onchange="calcAuto()" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white font-medium">
+                <option value="15">15%</option>
+                <option value="20" selected>20% (Regla de oro)</option>
+                <option value="30">30% (Recomendado)</option>
+                <option value="40">40%</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-300 block mb-1">Plazo en meses:</label>
+              <select id="plazoCarroMeses" onchange="calcAuto()" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white font-medium">
+                <option value="24">24 meses (2 años)</option>
+                <option value="36">36 meses (3 años)</option>
+                <option value="48" selected>48 meses (4 años)</option>
+                <option value="60">60 meses (5 años - Cuidado)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Tasa de interés anual automotriz (%):</label>
+            <div class="relative">
+              <input type="number" id="tasaCarroInput" oninput="calcAuto()" value="13.5" min="8" max="22" step="0.5" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-200">
+              <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 text-xs font-bold">% anual</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">Costo estimado de seguro mensual:</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="seguroCarroInput" oninput="calcAuto()" value="1200" min="0" step="100" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-xs font-bold text-slate-200">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Resultados del Auto -->
+        <div class="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-bold text-white text-base">Costo Real y Mensualidad del Vehículo</h3>
+            <span id="autoAprobacionBadge" class="text-xs px-2.5 py-0.5 rounded-full font-bold">Evaluando...</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+              <span class="text-slate-400 font-medium block">Desembolso Inicial:</span>
+              <div class="flex justify-between">
+                <span>Enganche:</span>
+                <span id="resEngancheAuto" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Comisión apertura (~2.5%):</span>
+                <span id="resComisionAuto" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-800 text-sm">
+                <span class="font-bold text-purple-400">Total Inicial:</span>
+                <span id="resTotalInicialAuto" class="font-bold text-purple-400">$0</span>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+              <span class="text-slate-400 font-medium block">Gasto Mensual Total (Crédito + Seguro):</span>
+              <div class="flex justify-between">
+                <span>Letra del crédito:</span>
+                <span id="resLetraAuto" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Seguro del auto:</span>
+                <span id="resSeguroAuto" class="font-bold text-white">$0</span>
+              </div>
+              <div class="flex justify-between text-sm pt-2 border-t border-slate-800">
+                <span class="font-bold text-emerald-400">Total Mensual Auto:</span>
+                <span id="resMensualidadTotalAuto" class="font-bold text-emerald-400">$0/mes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnóstico contra el ingreso -->
+          <div id="autoFeedbackBox" class="p-4 rounded-xl text-xs leading-relaxed">
+            <!-- Texto dinámico -->
+          </div>
+
+          <div class="text-[11px] text-slate-500 bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+            <strong>Advertencia del Contador:</strong> El auto es un activo que se deprecia entre 15% y 20% al salir de la agencia. Jamás tomes un plazo mayor a 48 meses o terminarás debiendo más dinero del que vale el auto.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: INVERSIONES (GBM, NU, ETORO, CETES) -->
+    <!-- ========================================== -->
+    <div id="content-inversiones" class="tab-content hidden space-y-6">
+      
+      <div class="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/30 rounded-2xl p-5 shadow-xl">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="trending-up" class="w-6 h-6 text-emerald-400"></i> Asesor Multiplataforma de Inversión
+        </h2>
+        <p class="text-xs text-slate-300 mt-1 max-w-4xl leading-relaxed">
+          Cada plataforma tiene un propósito específico. Un buen inversionista no mete todo en una sola canasta: usa <strong>Nu</strong> para tener dinero disponible con alto rendimiento, <strong>GBM+</strong> para comprar las empresas más grandes del mundo con beneficios fiscales en México, y <strong>eToro</strong> para diversificación global o trading.
+        </p>
+      </div>
+
+      <!-- Matriz de Decisión Rápida: ¿Cuál usar y para qué? -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Nu México -->
+        <div class="bg-slate-950 border border-purple-500/30 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-purple-500/60 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">Sofipo Regulada</span>
+              <span class="text-xs font-bold text-emerald-400">13.5% anual</span>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Nu (Cajitas)
+            </h3>
+            <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+              Ideal para: <strong>Fondo de emergencia y dinero de corto plazo (&lt;1 año)</strong>.
+            </p>
+            <ul class="text-[11px] text-slate-300 space-y-1.5 mb-4">
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Retiro 24/7 inmediato por SPEI</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Seguro Prosofipo hasta ~$205k</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Exento de ISR (hasta 5 UMAs)</li>
+            </ul>
+          </div>
+          <div class="pt-3 border-t border-slate-800 text-[11px] text-purple-300 font-semibold">
+            Veredicto: Imprescindible para tu liquidez
+          </div>
+        </div>
+
+        <!-- GBM+ -->
+        <div class="bg-slate-950 border border-blue-500/30 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-blue-500/60 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Casa de Bolsa (CNBV)</span>
+              <span class="text-xs font-bold text-blue-400">0.25% comisión</span>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> GBM+ (Bolsa de Valores)
+            </h3>
+            <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+              Ideal para: <strong>Invertir a mediano y largo plazo en el S&P 500, Fibras y acciones</strong>.
+            </p>
+            <ul class="text-[11px] text-slate-300 space-y-1.5 mb-4">
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Compra ETFs de EE.UU. (VOO, QQQ)</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Tasa preferencial SAT del 10%</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Regulada en México por CNBV</li>
+            </ul>
+          </div>
+          <div class="pt-3 border-t border-slate-800 text-[11px] text-blue-300 font-semibold">
+            Veredicto: La mejor opción formal en México
+          </div>
+        </div>
+
+        <!-- eToro -->
+        <div class="bg-slate-950 border border-teal-500/30 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-teal-500/60 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30">Broker Internacional</span>
+              <span class="text-xs font-bold text-teal-400">Multi-activo</span>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span> eToro (Global Trader)
+            </h3>
+            <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+              Ideal para: <strong>CopyTrading de inversores expertos y acciones fraccionadas en dólares</strong>.
+            </p>
+            <ul class="text-[11px] text-slate-300 space-y-1.5 mb-4">
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Copia carteras de traders con 1 clic</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400"></i> Fondeo en USD (conversión MXN-USD)</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400"></i> Impuestos SAT manuales en declaración</li>
+            </ul>
+          </div>
+          <div class="pt-3 border-t border-slate-800 text-[11px] text-teal-300 font-semibold">
+            Veredicto: Para diversificar fuera de México
+          </div>
+        </div>
+
+        <!-- CetesDirecto -->
+        <div class="bg-slate-950 border border-amber-500/30 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-amber-500/60 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">Deuda Soberana</span>
+              <span class="text-xs font-bold text-emerald-400">~10.7% anual</span>
+            </div>
+            <h3 class="font-bold text-white text-base mb-1 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> CetesDirecto (Hacienda)
+            </h3>
+            <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+              Ideal para: <strong>Cero riesgo institucional y blindaje contra la inflación (Udibonos)</strong>.
+            </p>
+            <ul class="text-[11px] text-slate-300 space-y-1.5 mb-4">
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Máxima seguridad jurídica de México</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> 0% comisiones de intermediación</li>
+              <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Domiciliación de ahorro automático</li>
+            </ul>
+          </div>
+          <div class="pt-3 border-t border-slate-800 text-[11px] text-amber-300 font-semibold">
+            Veredicto: La base más segura de todo México
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Simulador de Asignación Mensual Multiplataforma -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-bold text-white text-base flex items-center gap-2">
+              <i data-lucide="sliders-horizontal" class="w-5 h-5 text-emerald-400"></i> Distribución de Inversión Mensual
+            </h3>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-1">¿Cuánto dinero libre invertirás cada mes?</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+              <input type="number" id="inversionMensualInput" oninput="calcInversiones()" value="3000" min="200" step="200" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-7 pr-3 py-2 text-sm font-bold text-emerald-400">
+            </div>
+            <div class="flex gap-2 mt-1.5">
+              <button onclick="setMontoInversion(1500)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$1,500</button>
+              <button onclick="setMontoInversion(3000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$3,000</button>
+              <button onclick="setMontoInversion(5000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$5,000</button>
+              <button onclick="setMontoInversion(10000)" class="px-2 py-0.5 text-[11px] rounded bg-slate-800 text-slate-400 hover:text-white">$10,000</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium text-slate-300 block mb-2">Estrategia de Asignación:</label>
+            <div class="space-y-2">
+              <button onclick="setEstrategiaInversion('conservadora')" id="btn-strat-conservadora" class="strat-btn w-full p-3 rounded-xl border border-slate-800 bg-slate-900 text-left transition flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-emerald-400 block">Conservadora (Renta Fija Primaria)</span>
+                  <span class="text-[11px] text-slate-400">70% Nu/Cetes (Liquidez) + 30% GBM (S&P 500)</span>
+                </div>
+                <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
+              </button>
+
+              <button onclick="setEstrategiaInversion('balanceada')" id="btn-strat-balanceada" class="strat-btn active w-full p-3 rounded-xl border border-emerald-500 bg-emerald-500/10 text-left transition flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-emerald-300 block">Crecimiento Balanceado (Recomendado)</span>
+                  <span class="text-[11px] text-slate-300">25% Nu + 55% GBM+ (VOO S&P500) + 20% Fibras</span>
+                </div>
+                <i data-lucide="scale" class="w-4 h-4 text-emerald-400"></i>
+              </button>
+
+              <button onclick="setEstrategiaInversion('agresiva')" id="btn-strat-agresiva" class="strat-btn w-full p-3 rounded-xl border border-slate-800 bg-slate-900 text-left transition flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-amber-400 block">Global / Mayor Dinamismo</span>
+                  <span class="text-[11px] text-slate-400">15% Nu + 60% GBM+ (ETFs globales) + 25% eToro</span>
+                </div>
+                <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultados del Reparto Mensual y Gráfico -->
+        <div class="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h4 class="font-bold text-white text-base flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-5 h-5 text-teal-400"></i> Cómo depositar tus <span id="montoInversionTxt" class="text-emerald-400">$3,000 MXN</span> al mes
+          </h4>
+
+          <div id="allocationBreakdown" class="space-y-2.5">
+            <!-- Desglose dinámico en pesos y plataformas -->
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 space-y-1">
+            <div class="flex items-center gap-2 text-slate-300 font-semibold">
+              <i data-lucide="help-circle" class="w-4 h-4 text-emerald-400"></i> ¿Qué comprar exactamente dentro de GBM+?
+            </div>
+            <p class="leading-relaxed">
+              En GBM+ compra títulos del ETF <strong>VOO</strong> o <strong>IVVPESO</strong> (las 500 mejores empresas de EE.UU. como Apple, Microsoft, Google, Nvidia) y títulos de <strong>FIBRA Monterrey (FMTY14)</strong> o <strong>FIBRA Prologis</strong> para recibir dividendos por rentas de naves industriales directo a tu cuenta.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Calculadora de Interés Compuesto y Libertad Financiera a Largo Plazo -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-5 h-5 text-emerald-400"></i> Calculadora de Interés Compuesto (La Octava Maravilla)
+            </h3>
+            <p class="text-xs text-slate-400">Proyección exponencial invirtiendo en GBM+ y Nu de forma recurrente</p>
+          </div>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
+            Efecto Bola de Nieve Positivo
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300 font-medium">Plazo de inversión:</span>
+                <span id="aniosCompoundDisplay" class="font-bold text-emerald-400">10 años</span>
+              </div>
+              <input type="range" id="aniosCompoundSlider" min="1" max="30" value="10" oninput="calcCompoundInterest()" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                <span>1 año</span>
+                <span>5 años</span>
+                <span>10 años</span>
+                <span>20 años</span>
+                <span>30 años</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-slate-300 block mb-1">Rendimiento anual esperado promedio:</label>
+              <select id="tasaCompoundSelect" onchange="calcCompoundInterest()" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white font-medium">
+                <option value="9.0">9.0% (Conservador - Cetes / Deuda)</option>
+                <option value="11.5" selected>11.5% (Histórico S&P 500 en pesos / GBM+)</option>
+                <option value="14.0">14.0% (Renta Variable Dinámica)</option>
+              </select>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Aporte de tu bolsillo:</span>
+                <span id="compoundCapitalAportado" class="font-bold text-slate-200">$0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Intereses Ganados:</span>
+                <span id="compoundInteresesGanados" class="font-bold text-emerald-400">+$0</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-800 text-sm">
+                <span class="font-extrabold text-white">Patrimonio Total:</span>
+                <span id="compoundTotalFinal" class="font-extrabold text-emerald-400">$0 MXN</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8">
+            <div class="h-72">
+              <canvas id="compoundChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Resumen Fiscal: SAT México e Impuestos -->
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <h4 class="font-bold text-white text-sm flex items-center gap-2">
+          <i data-lucide="landmark" class="w-4 h-4 text-amber-400"></i> Lo que debes saber ante el SAT de cada plataforma
+        </h4>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span class="font-bold text-purple-400 block mb-1">Nu (Sofipo)</span>
+            <p class="text-slate-400 leading-relaxed">
+              <strong>100% Exento de impuestos</strong> si tu saldo promedio anual no rebasa las 5 UMAs (~$198,000 MXN). Si tienes menos de eso, no pagas un solo peso de ISR.
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span class="font-bold text-blue-400 block mb-1">GBM+ (Bolsa de Valores)</span>
+            <p class="text-slate-400 leading-relaxed">
+              Gozas del régimen preferencial del <strong>10% sobre la ganancia real</strong> de capital (Art. 161/162 LISR). GBM emite una constancia anual automática para tu declaración anual con 1 clic.
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <span class="font-bold text-teal-400 block mb-1">eToro (Extranjero)</span>
+            <p class="text-slate-400 leading-relaxed">
+              Debes firmar digitalmente el formulario <strong>W-8BEN</strong> para evitar doble tributación en EE.UU. Al ser cuenta en el extranjero, debes reportar ganancias de tipo de cambio y dividendos manualmente en la declaración anual.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Script con Motor Contable y Almacenamiento Local -->
+  <script>
+    // Estructura de Datos por Defecto
+    const DEFAULT_DATA = {
+      ingresos: [
+        { id: 1, concepto: 'Salario / Nómina fija', monto: 35000 },
+        { id: 2, concepto: 'Trabajos extras / Rendimientos', monto: 3000 }
+      ],
+      gastos: [
+        { id: 1, concepto: 'Renta / Vivienda', monto: 9500 },
+        { id: 2, concepto: 'Alimentos y despensa', monto: 6000 },
+        { id: 3, concepto: 'Servicios (Luz, agua, internet, gas)', monto: 1800 },
+        { id: 4, concepto: 'Transporte / Gasolina', monto: 2200 }
+      ],
+      deudas: [
+        { id: 1, nombre: 'Tarjeta Banamex / BBVA', saldo: 28000, tasa: 55.0, pagoMinimo: 1600 },
+        { id: 2, nombre: 'Préstamo Personal', saldo: 14000, tasa: 32.0, pagoMinimo: 1100 },
+        { id: 3, nombre: 'Tienda Departamental (Liverpool/Coppel)', saldo: 6500, tasa: 68.0, pagoMinimo: 700 }
+      ],
+      fondoEmergencia: {
+        mesesMeta: 3,
+        ahorroActual: 5000,
+        aporteMensual: 3000
+      },
+      hipoteca: {
+        precio: 1800000,
+        enganchePct: 20,
+        plazoAnios: 20,
+        tasaAnual: 10.25
+      },
+      auto: {
+        precio: 380000,
+        enganchePct: 20,
+        plazoMeses: 48,
+        tasaAnual: 13.5,
+        seguroMensual: 1200
+      },
+      inversiones: {
+        montoMensual: 3000,
+        estrategia: 'balanceada'
+      }
+    };
+
+    // Cargar datos de LocalStorage o usar por defecto
+    let appData = loadData();
+
+    let cashflowChartInstance = null;
+    let debtChartInstance = null;
+    let compoundChartInstance = null;
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem('inver_smart_accounting');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    function saveData() {
+      localStorage.setItem('inver_smart_accounting', JSON.stringify(appData));
+    }
+
+    function resetData() {
+      if (confirm('¿Deseas reiniciar los datos a los valores de ejemplo recomendados?')) {
+        localStorage.removeItem('inver_smart_accounting');
+        appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        initApp();
+      }
+    }
+
+    // Navegación de pestañas
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+        btn.classList.add('bg-slate-900', 'text-slate-400', 'border-slate-800');
+      });
+
+      const activeContent = document.getElementById(`content-${tabId}`);
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeContent) activeContent.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-900', 'text-slate-400', 'border-slate-800');
+        activeBtn.classList.add('active', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+      }
+
+      // Re-render chart if needed
+      if (tabId === 'dashboard') updateCashflowChart();
+      if (tabId === 'deudas') calcDebts();
+      if (tabId === 'emergencia') calcEmergencia();
+      if (tabId === 'casa') calcHipoteca();
+      if (tabId === 'carro') calcAuto();
+      if (tabId === 'inversiones') {
+        calcInversiones();
+        calcCompoundInterest();
+      }
+      
+      lucide.createIcons();
+    }
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+
+    function initApp() {
+      renderIngresosList();
+      renderGastosList();
+      renderDeudasTable();
+      recalcCashflow();
+      calcEmergencia();
+      calcHipoteca();
+      calcAuto();
+      calcInversiones();
+      calcCompoundInterest();
+      lucide.createIcons();
+    }
+
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+
+    // =====================================
+    // 1. GESTIÓN DE INGRESOS Y GASTOS
+    // =====================================
+    function renderIngresosList() {
+      const container = document.getElementById('ingresosList');
+      container.innerHTML = '';
+      appData.ingresos.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 text-xs';
+        div.innerHTML = `
+          <input type="text" value="${item.concepto}" onchange="updateIngreso(${index}, 'concepto', this.value)" class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200">
+          <div class="relative w-32">
+            <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-slate-500 font-bold">$</span>
+            <input type="number" value="${item.monto}" oninput="updateIngreso(${index}, 'monto', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-5 pr-2 py-1.5 text-emerald-400 font-bold">
+          </div>
+          <button onclick="deleteIngreso(${index})" class="p-1 text-slate-500 hover:text-red-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        `;
+        container.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    function addIngresoRow() {
+      appData.ingresos.push({ id: Date.now(), concepto: 'Nuevo Ingreso', monto: 2000 });
+      saveData();
+      renderIngresosList();
+      recalcCashflow();
+    }
+
+    function updateIngreso(idx, field, val) {
+      if (field === 'monto') appData.ingresos[idx].monto = parseFloat(val) || 0;
+      else appData.ingresos[idx].concepto = val;
+      saveData();
+      recalcCashflow();
+    }
+
+    function deleteIngreso(idx) {
+      appData.ingresos.splice(idx, 1);
+      saveData();
+      renderIngresosList();
+      recalcCashflow();
+    }
+
+    function renderGastosList() {
+      const container = document.getElementById('gastosList');
+      container.innerHTML = '';
+      appData.gastos.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 text-xs';
+        div.innerHTML = `
+          <input type="text" value="${item.concepto}" onchange="updateGasto(${index}, 'concepto', this.value)" class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200">
+          <div class="relative w-32">
+            <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-slate-500 font-bold">$</span>
+            <input type="number" value="${item.monto}" oninput="updateGasto(${index}, 'monto', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-5 pr-2 py-1.5 text-blue-400 font-bold">
+          </div>
+          <button onclick="deleteGasto(${index})" class="p-1 text-slate-500 hover:text-red-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        `;
+        container.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    function addGastoRow() {
+      appData.gastos.push({ id: Date.now(), concepto: 'Nuevo Gasto Fijo', monto: 1000 });
+      saveData();
+      renderGastosList();
+      recalcCashflow();
+    }
+
+    function updateGasto(idx, field, val) {
+      if (field === 'monto') appData.gastos[idx].monto = parseFloat(val) || 0;
+      else appData.gastos[idx].concepto = val;
+      saveData();
+      recalcCashflow();
+    }
+
+    function deleteGasto(idx) {
+      appData.gastos.splice(idx, 1);
+      saveData();
+      renderGastosList();
+      recalcCashflow();
+    }
+
+    // =====================================
+    // 2. GESTIÓN DE DEUDAS
+    // =====================================
+    function renderDeudasTable() {
+      const tbody = document.getElementById('deudasTableBody');
+      tbody.innerHTML = '';
+      let totalDeuda = 0;
+
+      appData.deudas.forEach((d, idx) => {
+        totalDeuda += d.saldo;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2.5 pr-2">
+            <input type="text" value="${d.nombre}" onchange="updateDeuda(${idx}, 'nombre', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 text-xs">
+          </td>
+          <td class="py-2.5 pr-2">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-slate-500 font-bold">$</span>
+              <input type="number" value="${d.saldo}" oninput="updateDeuda(${idx}, 'saldo', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-5 pr-2 py-1 text-red-400 font-bold text-xs">
+            </div>
+          </td>
+          <td class="py-2.5 pr-2">
+            <div class="relative">
+              <input type="number" value="${d.tasa}" step="0.5" oninput="updateDeuda(${idx}, 'tasa', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-amber-400 font-bold text-xs">
+              <span class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-500 font-bold text-[10px]">%</span>
+            </div>
+          </td>
+          <td class="py-2.5 pr-2">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-slate-500 font-bold">$</span>
+              <input type="number" value="${d.pagoMinimo}" oninput="updateDeuda(${idx}, 'pagoMinimo', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-5 pr-2 py-1 text-slate-200 font-bold text-xs">
+            </div>
+          </td>
+          <td class="py-2.5 text-center">
+            <button onclick="deleteDeuda(${idx})" class="p-1 text-slate-500 hover:text-red-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('totalDeudaBadge').textContent = `Total Deuda: ${fmt.format(totalDeuda)} MXN`;
+      lucide.createIcons();
+    }
+
+    function addDeudaRow() {
+      appData.deudas.push({ id: Date.now(), nombre: 'Tarjeta de Crédito', saldo: 10000, tasa: 45.0, pagoMinimo: 800 });
+      saveData();
+      renderDeudasTable();
+      recalcCashflow();
+      calcDebts();
+    }
+
+    function updateDeuda(idx, field, val) {
+      if (field === 'nombre') appData.deudas[idx].nombre = val;
+      else appData.deudas[idx][field] = parseFloat(val) || 0;
+      saveData();
+      recalcCashflow();
+      calcDebts();
+    }
+
+    function deleteDeuda(idx) {
+      appData.deudas.splice(idx, 1);
+      saveData();
+      renderDeudasTable();
+      recalcCashflow();
+      calcDebts();
+    }
+
+    // =====================================
+    // 3. RECÁLCULO DE FLUJO DE EFECTIVO
+    // =====================================
+    function recalcCashflow() {
+      const totalIngresos = appData.ingresos.reduce((acc, i) => acc + i.monto, 0);
+      const totalGastos = appData.gastos.reduce((acc, g) => acc + g.monto, 0);
+      const totalMinDeudas = appData.deudas.reduce((acc, d) => acc + d.pagoMinimo, 0);
+      const flujoLibre = totalIngresos - totalGastos - totalMinDeudas;
+
+      document.getElementById('sumIngresos').textContent = fmt.format(totalIngresos);
+      document.getElementById('sumGastos').textContent = fmt.format(totalGastos);
+      document.getElementById('sumPagosDeudas').textContent = fmt.format(totalMinDeudas);
+      
+      const flujoLibreEl = document.getElementById('sumFlujoLibre');
+      flujoLibreEl.textContent = fmt.format(flujoLibre);
+      flujoLibreEl.className = `text-2xl font-bold mt-1 ${flujoLibre >= 0 ? 'text-amber-400' : 'text-red-500'}`;
+
+      document.getElementById('flujoAceleradorTxt').textContent = fmt.format(Math.max(0, flujoLibre));
+
+      // Semáforo Financiero
+      renderHealthCard(totalIngresos, totalGastos, totalMinDeudas, flujoLibre);
+      updateCashflowChart();
+      calcEmergencia();
+      calcHipoteca();
+      calcAuto();
+    }
+
+    function renderHealthCard(ingresos, gastos, deudas, flujo) {
+      const container = document.getElementById('financialHealthCard');
+      const pctDeuda = ingresos > 0 ? (deudas / ingresos) * 100 : 0;
+      const pctGastos = ingresos > 0 ? (gastos / ingresos) * 100 : 0;
+
+      let estado = 'Excelente';
+      let colorClass = 'border-emerald-500/30 bg-emerald-950/10 text-emerald-400';
+      let icon = 'shield-check';
+      let mensaje = 'Tus gastos y deudas están bajo control. Tienes flujo libre positivo para acelerar tus metas.';
+
+      if (flujo < 0) {
+        estado = 'Alerta: Déficit Mensual';
+        colorClass = 'border-red-500/40 bg-red-950/20 text-red-400';
+        icon = 'alert-octagon';
+        mensaje = 'Estás gastando más de lo que ingresas. Es prioritario recortar gastos variables para no caer en sobreendeudamiento.';
+      } else if (pctDeuda > 30) {
+        estado = 'Riesgo: Alto Endeudamiento';
+        colorClass = 'border-amber-500/30 bg-amber-950/10 text-amber-400';
+        icon = 'alert-triangle';
+        mensaje = `Tus pagos mínimos de deuda consumen el ${pctDeuda.toFixed(1)}% de tus ingresos (lo ideal es &lt;20%). Enfócate en liquidarlas.`;
+      }
+
+      container.className = `border rounded-2xl p-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 ${colorClass}`;
+      container.innerHTML = `
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-slate-900/80 flex items-center justify-center shrink-0 border border-slate-800">
+            <i data-lucide="${icon}" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs uppercase font-extrabold tracking-wider">Estado Financiero:</span>
+              <strong class="text-sm font-bold">${estado}</strong>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">${mensaje}</p>
+          </div>
+        </div>
+        <div class="text-right shrink-0">
+          <span class="text-xs text-slate-400 block">Capacidad de Ahorro:</span>
+          <span class="text-lg font-bold">${ingresos > 0 ? ((flujo / ingresos) * 100).toFixed(1) : 0}% del ingreso</span>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function updateCashflowChart() {
+      const totalIngresos = appData.ingresos.reduce((acc, i) => acc + i.monto, 0);
+      const totalGastos = appData.gastos.reduce((acc, g) => acc + g.monto, 0);
+      const totalDeudas = appData.deudas.reduce((acc, d) => acc + d.pagoMinimo, 0);
+      const flujoLibre = Math.max(0, totalIngresos - totalGastos - totalDeudas);
+
+      const ctx = document.getElementById('cashflowChart').getContext('2d');
+      if (cashflowChartInstance) cashflowChartInstance.destroy();
+
+      cashflowChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Gastos Fijos', 'Pagos de Deudas', 'Flujo Libre'],
+          datasets: [{
+            data: [totalGastos, totalDeudas, flujoLibre],
+            backgroundColor: ['#3b82f6', '#ef4444', '#10b981'],
+            borderColor: '#020617',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          cutout: '72%'
+        }
+      });
+
+      // Análisis de la regla 50-30-20
+      const pctGastos = totalIngresos > 0 ? ((totalGastos / totalIngresos) * 100).toFixed(1) : 0;
+      const pctDeuda = totalIngresos > 0 ? ((totalDeudas / totalIngresos) * 100).toFixed(1) : 0;
+      const pctFlujo = totalIngresos > 0 ? ((flujoLibre / totalIngresos) * 100).toFixed(1) : 0;
+
+      document.getElementById('cashflowAnalysis').innerHTML = `
+        <div class="space-y-2.5 text-xs">
+          <div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Gastos Básicos:</span>
+            <span class="font-bold text-slate-200">${pctGastos}% (Recomendado: máx 50%)</span>
+          </div>
+          <div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> Deudas activas:</span>
+            <span class="font-bold text-slate-200">${pctDeuda}% (Recomendado: máx 20%)</span>
+          </div>
+          <div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Flujo disponible:</span>
+            <span class="font-bold text-emerald-400">${pctFlujo}% (Para liquidar deudas o fondo)</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // =====================================
+    // 4. MOTOR LIQUIDADOR DE DEUDAS
+    // =====================================
+    function calcDebts() {
+      const strategy = document.getElementById('debtStrategy').value;
+      const pagoExtra = parseFloat(document.getElementById('pagoExtraInput').value) || 0;
+
+      let deudasCopy = JSON.parse(JSON.stringify(appData.deudas));
+      if (deudasCopy.length === 0) {
+        document.getElementById('mesesPagarTxt').textContent = '¡Sin deudas!';
+        document.getElementById('fechaLibertadTxt').textContent = 'Hoy mismo';
+        document.getElementById('interesesAhorradosTxt').textContent = '$0';
+        return;
+      }
+
+      // Ordenar según estrategia
+      if (strategy === 'snowball') {
+        deudasCopy.sort((a, b) => a.saldo - b.saldo); // Saldo menor a mayor
+      } else {
+        deudasCopy.sort((a, b) => b.tasa - a.tasa); // Tasa mayor a menor
+      }
+
+      // Simulación mes a mes
+      let meses = 0;
+      let totalIntereses = 0;
+      let historySaldos = [];
+      let totalSaldoInicial = deudasCopy.reduce((acc, d) => acc + d.saldo, 0);
+
+      let deudasSim = deudasCopy.map(d => ({ ...d }));
+
+      while (meses < 120) {
+        const saldoTotalActual = deudasSim.reduce((acc, d) => acc + d.saldo, 0);
+        historySaldos.push(saldoTotalActual);
+        if (saldoTotalActual <= 0) break;
+
+        meses++;
+        let extraDisponible = pagoExtra;
+
+        // 1. Aplicar intereses mensuales y pagos mínimos
+        for (let d of deudasSim) {
+          if (d.saldo <= 0) continue;
+          const interesMes = d.saldo * ((d.tasa / 100) / 12);
+          totalIntereses += interesMes;
+          d.saldo += interesMes;
+
+          const pago = Math.min(d.saldo, d.pagoMinimo);
+          d.saldo -= pago;
+        }
+
+        // 2. Aplicar pago extra a la deuda prioritaria
+        for (let d of deudasSim) {
+          if (d.saldo > 0 && extraDisponible > 0) {
+            const abono = Math.min(d.saldo, extraDisponible);
+            d.saldo -= abono;
+            extraDisponible -= abono;
+          }
+        }
+      }
+
+      document.getElementById('mesesPagarTxt').textContent = `${meses} meses (${(meses / 12).toFixed(1)} años)`;
+      
+      const fechaActual = new Date();
+      fechaActual.setMonth(fechaActual.getMonth() + meses);
+      const opcionesFecha = { year: 'numeric', month: 'long' };
+      document.getElementById('fechaLibertadTxt').textContent = fechaActual.toLocaleDateString('es-MX', opcionesFecha);
+
+      const ahorroEstimado = totalSaldoInicial * 0.28;
+      document.getElementById('interesesAhorradosTxt').textContent = fmt.format(ahorroEstimado);
+
+      // Renderizar gráfico de caída de deudas
+      const ctx = document.getElementById('debtChart').getContext('2d');
+      if (debtChartInstance) debtChartInstance.destroy();
+
+      debtChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: historySaldos.map((_, i) => `Mes ${i}`),
+          datasets: [{
+            label: 'Saldo Total Deuda (MXN)',
+            data: historySaldos,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+
+    // =====================================
+    // 5. FONDO DE EMERGENCIA
+    // =====================================
+    function setMesesEmergencia(meses) {
+      appData.fondoEmergencia.mesesMeta = meses;
+      document.querySelectorAll('.em-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-amber-500', 'bg-amber-500/10', 'text-amber-300');
+        btn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
+      });
+      const activeBtn = document.getElementById(`btn-em-${meses}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+        activeBtn.classList.add('active', 'border-amber-500', 'bg-amber-500/10', 'text-amber-300');
+      }
+      calcEmergencia();
+    }
+
+    function calcEmergencia() {
+      const gastosMensuales = appData.gastos.reduce((acc, g) => acc + g.monto, 0);
+      const mesesMeta = appData.fondoEmergencia.mesesMeta || 3;
+      const ahorroActual = parseFloat(document.getElementById('ahorroActualInput')?.value) || 0;
+      const aporteMensual = parseFloat(document.getElementById('aporteMensualFondoInput')?.value) || 1;
+
+      const metaTotal = gastosMensuales * mesesMeta;
+      const faltante = Math.max(0, metaTotal - ahorroActual);
+      const mesesEstimados = aporteMensual > 0 ? Math.ceil(faltante / aporteMensual) : 0;
+      const pct = metaTotal > 0 ? Math.min(100, Math.round((ahorroActual / metaTotal) * 100)) : 100;
+
+      document.getElementById('emGastosMensuales').textContent = fmt.format(gastosMensuales);
+      document.getElementById('emMetaTotal').textContent = fmt.format(metaTotal);
+      document.getElementById('emFaltante').textContent = fmt.format(faltante);
+      document.getElementById('emMesesEstimados').textContent = `${mesesEstimados} meses (${(mesesEstimados/12).toFixed(1)} años)`;
+
+      document.getElementById('emPorcentajeTxt').textContent = `${pct}% alcanzado`;
+      document.getElementById('emProgressBar').style.width = `${pct}%`;
+    }
+
+    // =====================================
+    // 6. ASESOR HIPOTECARIO (CASA)
+    // =====================================
+    function setPrecioCasa(val) {
+      document.getElementById('precioCasaInput').value = val;
+      calcHipoteca();
+    }
+
+    function calcHipoteca() {
+      const precio = parseFloat(document.getElementById('precioCasaInput')?.value) || 1800000;
+      const enganchePct = parseFloat(document.getElementById('engancheCasaPct')?.value) || 20;
+      const plazoAnios = parseInt(document.getElementById('plazoCasaAnios')?.value) || 20;
+      const tasaAnual = parseFloat(document.getElementById('tasaHipotecaInput')?.value) || 10.25;
+
+      const totalIngresos = appData.ingresos.reduce((acc, i) => acc + i.monto, 0);
+
+      const engancheMonto = precio * (enganchePct / 100);
+      const gastosNotariales = precio * 0.06; // 6% promedio en México
+      const totalEfectivoRequerido = engancheMonto + gastosNotariales;
+
+      const montoFinanciar = precio - engancheMonto;
+
+      // Cálculo de amortización mensual: Cuota = P * [r(1+r)^n] / [(1+r)^n - 1]
+      const n = plazoAnios * 12;
+      const r = (tasaAnual / 100) / 12;
+      const mensualidad = (montoFinanciar * (r * Math.pow(1 + r, n))) / (Math.pow(1 + r, n) - 1);
+      const mensualidadConSeguros = mensualidad * 1.08; // 8% extra de seguro de vida y daños
+
+      const ingresoMinimo = mensualidadConSeguros / 0.33; // Bancos piden que no supere 33% del ingreso
+
+      document.getElementById('resEngancheCasa').textContent = fmt.format(engancheMonto);
+      document.getElementById('resGastosNotariales').textContent = fmt.format(gastosNotariales);
+      document.getElementById('resTotalEfectivoCasa').textContent = fmt.format(totalEfectivoRequerido);
+      document.getElementById('resMontoFinanciarCasa').textContent = fmt.format(montoFinanciar);
+      document.getElementById('resMensualidadCasa').textContent = `${fmt.format(mensualidadConSeguros)}`;
+      document.getElementById('resIngresoMinimoCasa').textContent = fmt.format(ingresoMinimo);
+
+      // Evaluación contra el perfil del usuario
+      const badge = document.getElementById('hipotecaAprobacionBadge');
+      const feedbackBox = document.getElementById('hipotecaFeedbackBox');
+
+      if (totalIngresos >= ingresoMinimo) {
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        badge.textContent = 'Perfil Financiero Apto';
+        feedbackBox.className = 'p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs text-slate-300';
+        feedbackBox.innerHTML = `
+          <strong class="text-emerald-400 font-bold block mb-1">¡Excelente compatibilidad bancaria!</strong>
+          Tus ingresos de ${fmt.format(totalIngresos)} superan el mínimo necesario (${fmt.format(ingresoMinimo)}). 
+          Tu objetivo primordial es acumular los <strong class="text-white">${fmt.format(totalEfectivoRequerido)}</strong> de enganche y escrituras sin usar crédito.
+        `;
+      } else {
+        const gap = ingresoMinimo - totalIngresos;
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        badge.textContent = 'Requiere Coacreditado o Mayor Enganche';
+        feedbackBox.className = 'p-4 rounded-xl bg-amber-950/20 border border-amber-500/20 text-xs text-slate-300';
+        feedbackBox.innerHTML = `
+          <strong class="text-amber-400 font-bold block mb-1">Observación del Asesor:</strong>
+          La mensualidad estimada (${fmt.format(mensualidadConSeguros)}) representaría más del 33% de tus ingresos comprobables actuales. 
+          Opciones recomendadas:
+          <ul class="list-disc ml-4 mt-1 space-y-1">
+            <li>Unir ingresos con tu pareja o cónyuge (Crédito mancomunado o Cofinavit).</li>
+            <li>Aumentar el enganche al 30% o buscar una propiedad de menor valor.</li>
+          </ul>
+        `;
+      }
+    }
+
+    // =====================================
+    // 7. ASESOR AUTOMOTRIZ (AUTO)
+    // =====================================
+    function setPrecioAuto(val) {
+      document.getElementById('precioCarroInput').value = val;
+      calcAuto();
+    }
+
+    function calcAuto() {
+      const precio = parseFloat(document.getElementById('precioCarroInput')?.value) || 380000;
+      const enganchePct = parseFloat(document.getElementById('engancheCarroPct')?.value) || 20;
+      const plazoMeses = parseInt(document.getElementById('plazoCarroMeses')?.value) || 48;
+      const tasaAnual = parseFloat(document.getElementById('tasaCarroInput')?.value) || 13.5;
+      const seguroMensual = parseFloat(document.getElementById('seguroCarroInput')?.value) || 1200;
+
+      const totalIngresos = appData.ingresos.reduce((acc, i) => acc + i.monto, 0);
+
+      const enganche = precio * (enganchePct / 100);
+      const comisionApertura = precio * 0.025; // 2.5%
+      const totalInicial = enganche + comisionApertura;
+
+      const montoFinanciar = precio - enganche;
+
+      // Cuota mensual
+      const r = (tasaAnual / 100) / 12;
+      const mensualidadCredito = (montoFinanciar * (r * Math.pow(1 + r, plazoMeses))) / (Math.pow(1 + r, plazoMeses) - 1);
+      const totalMensual = mensualidadCredito + seguroMensual;
+
+      document.getElementById('resEngancheAuto').textContent = fmt.format(enganche);
+      document.getElementById('resComisionAuto').textContent = fmt.format(comisionApertura);
+      document.getElementById('resTotalInicialAuto').textContent = fmt.format(totalInicial);
+      document.getElementById('resLetraAuto').textContent = fmt.format(mensualidadCredito);
+      document.getElementById('resSeguroAuto').textContent = fmt.format(seguroMensual);
+      document.getElementById('resMensualidadTotalAuto').textContent = `${fmt.format(totalMensual)}`;
+
+      // Evaluación Regla 20/4/10: Mensualidad <= 10% del ingreso
+      const pctIngreso = totalIngresos > 0 ? (totalMensual / totalIngresos) * 100 : 0;
+      const badge = document.getElementById('autoAprobacionBadge');
+      const feedbackBox = document.getElementById('autoFeedbackBox');
+
+      if (pctIngreso <= 12) {
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        badge.textContent = 'Cumple la Regla 20/4/10';
+        feedbackBox.className = 'p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs text-slate-300';
+        feedbackBox.innerHTML = `
+          <strong class="text-emerald-400 font-bold block mb-1">¡Compra Financieramente Saludable!</strong>
+          El costo mensual del auto (${fmt.format(totalMensual)}) representa el <strong>${pctIngreso.toFixed(1)}%</strong> de tus ingresos (dentro del límite sano). No comprometerá tus finanzas.
+        `;
+      } else {
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        badge.textContent = 'Supera el 10% Sugerido';
+        feedbackBox.className = 'p-4 rounded-xl bg-amber-950/20 border border-amber-500/20 text-xs text-slate-300';
+        feedbackBox.innerHTML = `
+          <strong class="text-amber-400 font-bold block mb-1">Alerta de Sobrecosto:</strong>
+          El auto te costaría el <strong>${pctIngreso.toFixed(1)}%</strong> de tus ingresos mensuales (lo recomendado es máx 10% a 12%). 
+          Comprar un vehículo que consuma más del 15% de tu ingreso puede retrasar la meta de tu casa o tu fondo de emergencia. Considera un auto seminuevo o dar más del 30% de enganche.
+        `;
+      }
+    }
+
+    // =====================================
+    // 8. ASESOR DE INVERSIONES Y PLATAFORMAS
+    // =====================================
+    function setMontoInversion(val) {
+      document.getElementById('inversionMensualInput').value = val;
+      calcInversiones();
+    }
+
+    function setEstrategiaInversion(strat) {
+      if (!appData.inversiones) appData.inversiones = {};
+      appData.inversiones.estrategia = strat;
+      saveData();
+
+      document.querySelectorAll('.strat-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-emerald-500', 'bg-emerald-500/10');
+        btn.classList.add('border-slate-800', 'bg-slate-900');
+      });
+
+      const activeBtn = document.getElementById(`btn-strat-${strat}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-800', 'bg-slate-900');
+        activeBtn.classList.add('active', 'border-emerald-500', 'bg-emerald-500/10');
+      }
+
+      calcInversiones();
+    }
+
+    function calcInversiones() {
+      const montoTotal = parseFloat(document.getElementById('inversionMensualInput')?.value) || 3000;
+      const strat = appData.inversiones?.estrategia || 'balanceada';
+
+      const montoTxt = document.getElementById('montoInversionTxt');
+      if (montoTxt) montoTxt.textContent = `${fmt.format(montoTotal)} MXN`;
+
+      let distribution = [];
+
+      if (strat === 'conservadora') {
+        distribution = [
+          {
+            plataforma: 'Nu México (Cajitas)',
+            tipo: 'Renta Fija / Liquidez 24/7',
+            pct: 45,
+            activo: 'Cajitas Nu (13.5% anual)',
+            color: 'border-purple-500/30 bg-purple-950/10 text-purple-400',
+            dot: 'bg-purple-500'
+          },
+          {
+            plataforma: 'CetesDirecto (Gobierno)',
+            tipo: 'Deuda Soberana',
+            pct: 25,
+            activo: 'Cetes 28D / Udibonos (10.75%)',
+            color: 'border-amber-500/30 bg-amber-950/10 text-amber-400',
+            dot: 'bg-amber-500'
+          },
+          {
+            plataforma: 'GBM+ (Casa de Bolsa)',
+            tipo: 'Bolsa de Valores',
+            pct: 30,
+            activo: 'ETF S&P 500 (VOO / IVVPESO)',
+            color: 'border-blue-500/30 bg-blue-950/10 text-blue-400',
+            dot: 'bg-blue-500'
+          }
+        ];
+      } else if (strat === 'balanceada') {
+        distribution = [
+          {
+            plataforma: 'Nu México (Cajitas)',
+            tipo: 'Liquidez con Rendimiento',
+            pct: 25,
+            activo: 'Cajitas Nu (Fondo de maniobra)',
+            color: 'border-purple-500/30 bg-purple-950/10 text-purple-400',
+            dot: 'bg-purple-500'
+          },
+          {
+            plataforma: 'GBM+ (Casa de Bolsa)',
+            tipo: 'Renta Variable Global',
+            pct: 55,
+            activo: 'ETF VOO (S&P 500) o VT (Mundo)',
+            color: 'border-blue-500/30 bg-blue-950/10 text-blue-400',
+            dot: 'bg-blue-500'
+          },
+          {
+            plataforma: 'GBM+ (Bienes Raíces)',
+            tipo: 'Rentas Inmobiliarias',
+            pct: 20,
+            activo: 'Fibras (FMTY14, FIBRAPL)',
+            color: 'border-teal-500/30 bg-teal-950/10 text-teal-400',
+            dot: 'bg-teal-500'
+          }
+        ];
+      } else {
+        // Agresiva / Global
+        distribution = [
+          {
+            plataforma: 'Nu México (Cajitas)',
+            tipo: 'Colchón de Seguridad',
+            pct: 15,
+            activo: 'Cajitas Nu',
+            color: 'border-purple-500/30 bg-purple-950/10 text-purple-400',
+            dot: 'bg-purple-500'
+          },
+          {
+            plataforma: 'GBM+ (Casa de Bolsa)',
+            tipo: 'Bolsa Global',
+            pct: 60,
+            activo: 'ETFs VOO, QQQ (Tecnología)',
+            color: 'border-blue-500/30 bg-blue-950/10 text-blue-400',
+            dot: 'bg-blue-500'
+          },
+          {
+            plataforma: 'eToro (Broker Global)',
+            tipo: 'CopyTrading & Global',
+            pct: 25,
+            activo: 'CopyTrader / Acciones Internacionales',
+            color: 'border-teal-500/30 bg-teal-950/10 text-teal-400',
+            dot: 'bg-teal-500'
+          }
+        ];
+      }
+
+      const container = document.getElementById('allocationBreakdown');
+      if (container) {
+        let html = '';
+        distribution.forEach(item => {
+          const montoItem = montoTotal * (item.pct / 100);
+          html += `
+            <div class="p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${item.color}">
+              <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full shrink-0 ${item.dot}"></span>
+                <div>
+                  <span class="font-bold text-white text-xs block">${item.plataforma}</span>
+                  <span class="text-[11px] text-slate-300">${item.activo}</span>
+                </div>
+              </div>
+              <div class="text-right flex items-center justify-between sm:block">
+                <span class="text-sm font-extrabold text-white">${fmt.format(montoItem)}/mes</span>
+                <span class="text-[10px] text-slate-400 block">${item.pct}% de tu aporte</span>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      }
+
+      calcCompoundInterest();
+    }
+
+    function calcCompoundInterest() {
+      const sliderAnios = document.getElementById('aniosCompoundSlider');
+      const selectTasa = document.getElementById('tasaCompoundSelect');
+      const inputAporte = document.getElementById('inversionMensualInput');
+
+      if (!sliderAnios || !selectTasa || !inputAporte) return;
+
+      const anios = parseInt(sliderAnios.value) || 10;
+      const tasaAnual = parseFloat(selectTasa.value) || 11.5;
+      const pmt = parseFloat(inputAporte.value) || 3000;
+
+      document.getElementById('aniosCompoundDisplay').textContent = `${anios} años`;
+
+      const meses = anios * 12;
+      const r = (tasaAnual / 100) / 12;
+
+      let labels = [];
+      let datasetAporte = [];
+      let datasetTotal = [];
+
+      for (let y = 1; y <= anios; y++) {
+        labels.push(`Año ${y}`);
+        const m = y * 12;
+        const totalAportado = pmt * m;
+        // Fórmula de anualidad ordinaria con interés compuesto
+        const valorFuturo = pmt * ((Math.pow(1 + r, m) - 1) / r);
+
+        datasetAporte.push(Math.round(totalAportado));
+        datasetTotal.push(Math.round(valorFuturo));
+      }
+
+      const totalAportadoFinal = datasetAporte[datasetAporte.length - 1] || 0;
+      const totalFuturoFinal = datasetTotal[datasetTotal.length - 1] || 0;
+      const interesesGanados = Math.max(0, totalFuturoFinal - totalAportadoFinal);
+
+      document.getElementById('compoundCapitalAportado').textContent = fmt.format(totalAportadoFinal);
+      document.getElementById('compoundInteresesGanados').textContent = `+${fmt.format(interesesGanados)}`;
+      document.getElementById('compoundTotalFinal').textContent = `${fmt.format(totalFuturoFinal)} MXN`;
+
+      // Renderizar Gráfico
+      const chartElem = document.getElementById('compoundChart');
+      if (!chartElem) return;
+
+      const ctx = chartElem.getContext('2d');
+      if (compoundChartInstance) compoundChartInstance.destroy();
+
+      compoundChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Patrimonio Total (Interés Compuesto)',
+              data: datasetTotal,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              fill: true,
+              tension: 0.35,
+              borderWidth: 2.5
+            },
+            {
+              label: 'Dinero Aportado de tu Bolsillo',
+              data: datasetAporte,
+              borderColor: '#64748b',
+              backgroundColor: 'transparent',
+              borderDash: [5, 5],
+              tension: 0.1,
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: { color: '#cbd5e1', font: { size: 11 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ` ${context.dataset.label}: ${fmt.format(context.raw)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
